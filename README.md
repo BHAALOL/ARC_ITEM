@@ -1,77 +1,77 @@
 # ARC Raiders Loot Recycler
 
-A lightweight React + TypeScript single-page app to manage ARC Raiders loot. It loads the latest items from the MetaForge community API (cached locally), merges your French aliases and Recycling Cheat Sheet preferences, and lets you classify each item as KEEP, MAYBE, or RECYCLE with instant filtering.
+Application monopage légère (React + TypeScript) pour gérer le loot ARC Raiders. Elle charge localement la dernière liste d’objets issue de l’API communautaire MetaForge, fusionne vos alias français et vos préférences issues du guide de recyclage, puis vous permet de classer chaque objet en GARDER, PEUT‑ÊTRE ou RECYCLER avec des filtres instantanés.
 
-Item data provided by [MetaForge](https://metaforge.app/arc-raiders). Recycling categories come from the community "ARC Raiders Recycling Cheat Sheet".
+Données d’objets fournies par [MetaForge](https://metaforge.app/arc-raiders). Les catégories de recyclage proviennent de la communauté « ARC Raiders Recycling Cheat Sheet ».
 
-## Features
+## Fonctionnalités
 
-- Cached `data/items-base.json` populated via MetaForge API (no runtime API calls)
-- Merge-in support for manual French names/aliases and cheat sheet guidance
-- Search normalizes English/French names plus aliases with accent tolerance
-- Filters by category, rarity, user status, and guide category (+ quick presets)
-- LocalStorage persistence of KEEP/MAYBE/RECYCLE selections with conflict hints
-- Simple FR/EN toggle for the interface labels
+- `data/items-base.json` mis en cache depuis l’API MetaForge (aucun appel runtime)
+- Fusion facultative d’alias français manuels et du guide de recyclage
+- Recherche tolérante aux accents sur les noms anglais/français + alias
+- Filtres par catégorie, rareté, statut utilisateur et catégorie du guide (avec presets rapides)
+- Sauvegarde locale (localStorage) des statuts GARDER/PEUT‑ÊTRE/RECYCLER avec alertes de conflit
+- Bascule FR/EN pour les libellés de l’interface
 
-## Getting started
+## Démarrage
 
 ```bash
 npm install
-npm run update:items   # fetches latest items JSON via MetaForge API
-npm run update:french  # imports official French names from ARC Tracker
-npm run update:guide   # parses the GameRant article for guide classifications
-npm run dev            # start Vite dev server
+npm run update:items   # récupère le JSON MetaForge
+npm run update:french  # importe les noms officiels depuis ARC Tracker
+npm run update:guide   # parse l’article GameRant pour les catégories
+npm run dev            # lance le serveur Vite
 ```
 
-Open the printed localhost URL (defaults to `http://localhost:5173`).
+Ouvre l’URL locale affichée (par défaut `http://localhost:5173`).
 
-> If you see a warning that `data/items-base.json` is missing, run `npm run update:items` first.
+> Si `data/items-base.json` manque, exécute d’abord `npm run update:items`.
 
-## Building for production
+## Build production
 
 ```bash
-npm run build   # type-check + Vite build -> dist/
-npm run start   # serves the production build (alias of vite preview --host)
+npm run build   # vérifie le typage puis build Vite -> dist/
+npm run start   # sert la version buildée (alias vite preview --host)
 ```
 
-Deploy the contents of `dist/` to any static host or serve with a simple HTTP server on your VPS.
+Déploie le contenu de `dist/` sur un hébergeur statique ou via un simple serveur HTTP sur ton VPS.
 
-## Refreshing item data
+## Rafraîchir les données
 
-The project ships with two helper scripts:
+Le projet inclut trois scripts :
 
-- `scripts/update-items.js` downloads the entire MetaForge `/items` catalog (all pages) and saves it to `data/items-base.json`.
-- `scripts/update-french-aliases.js` calls the [ARC Tracker](https://arctracker.io/fr/items) API and merges all French item names into `data/item-aliases.json` so searches work with FR queries.
-- `scripts/update-guide-from-gamerant.js` fetches the [GameRant safe-to-sell article](https://gamerant.com/arc-raiders-which-item-safe-sell-should-you-recycle-guide-list/), parses the big table, and converts it into guide metadata.
+- `scripts/update-items.js` télécharge tout le catalogue MetaForge `/items` (toutes les pages) et l’écrit dans `data/items-base.json`.
+- `scripts/update-french-aliases.js` appelle l’API [ARC Tracker](https://arctracker.io/fr/items) et fusionne chaque nom français dans `data/item-aliases.json` pour permettre la recherche en FR.
+- `scripts/update-guide-from-gamerant.js` récupère l’article GameRant « safe-to-sell », parse le tableau et génère les métadonnées du guide.
 
 ```
-npm run update:items   # refresh MetaForge data
-npm run update:french  # refresh official French names
-npm run update:guide   # refresh guide metadata from GameRant
+npm run update:items   # met à jour les données MetaForge
+npm run update:french  # rafraîchit les noms officiels FR
+npm run update:guide   # rafraîchit les infos guide depuis GameRant
 ```
 
-Commit the updated JSON if you want the new data bundled with the app, then rebuild.
+Committe les JSON mis à jour si tu veux qu’ils soient embarqués, puis rebuild.
 
-## Customizable data files
+## Fichiers de données personnalisables
 
-All JSON lives in the `data/` folder:
+Tout vit dans `data/` :
 
-- `items-base.json` – raw response from the MetaForge items endpoint (managed by the update script).
-- `item-aliases.json` – map keyed by item `id` where `npm run update:french` stores `name_fr` entries from ARC Tracker; you can still extend each entry with your own `aliases`.
-- `french-dictionary.json` – lightweight English→French dictionary used to auto-generate French tokens from the English names. Extend this list with your own words or multi-word entries so the search finds items when you type their French name (the UI still displays English).
-- `guide-cheatsheet.json` – generated by the GameRant scraper. Each entry stores the derived `guideCategory`, optional `stations`, list of quests, what the article says about when to sell, plus the recycle breakdown/sell price pulled from the table. You can manually edit individual entries if you disagree with the parser.
+- `items-base.json` – réponse brute de l’endpoint MetaForge (scripté).
+- `item-aliases.json` – map par `id` où `npm run update:french` stocke `name_fr` ; tu peux ajouter tes propres `aliases`.
+- `french-dictionary.json` – mini dictionnaire EN→FR utilisé pour générer des tokens afin que la recherche reconnaisse tes requêtes françaises même sans alias.
+- `guide-cheatsheet.json` – produit par le scraper GameRant : catégorie de guide, stations, quêtes, recommandations de vente, recyclages, etc.
 
-When the app boots it merges everything. Any item not present in `guide-cheatsheet.json` defaults to `guideCategory = "NONE"`.
+Au démarrage, l’app fusionne toutes ces sources. Tout objet absent de `guide-cheatsheet.json` tombe par défaut dans la catégorie `NONE`.
 
-## User preferences & persistence
+## Préférences utilisateur & persistance
 
-Because this is a pure static SPA, per-item KEEP/MAYBE/RECYCLE selections are stored in `localStorage` under the key `arcraiders:user-statuses`. Clearing browser storage resets your selections. If you ever expand to a backend, mirror the same structure server-side to keep compatibility.
+Application purement statique : les sélections GARDER/PEUT‑ÊTRE/RECYCLER sont stockées dans `localStorage` sous la clé `arcraiders:user-statuses`. Vider le stockage du navigateur réinitialise tout. Si un backend apparaît un jour, conserve la même structure pour rester compatible.
 
-## Linting
+## Lint
 
-`npm run lint` runs ESLint (flat config) across the project. Vite/TypeScript strict settings are enabled for safer refactors.
+`npm run lint` lance ESLint (config flat) sur le projet. Vite/TypeScript sont configurés en mode strict pour faciliter les refactorings sûrs.
 
-## Credits
+## Crédits
 
-- Item metadata: [MetaForge](https://metaforge.app/arc-raiders) (see their usage terms).
-- Recycling groupings: "ARC Raiders Recycling Cheat Sheet" (community resource, not parsed automatically—edit `guide-cheatsheet.json`).
+- Métadonnées d’objets : [MetaForge](https://metaforge.app/arc-raiders) (respecte leurs conditions d’usage).
+- Groupes de recyclage : ressource communautaire « ARC Raiders Recycling Cheat Sheet » (non parsée automatiquement – modifie `guide-cheatsheet.json` si besoin).
